@@ -1,0 +1,201 @@
+================================================================
+ APU CODECAMP MANAGEMENT SYSTEM
+ SETUP GUIDE - READ THIS FIRST
+================================================================
+
+STEP 1: SET UP THE DATABASE
+-----------------------------
+1. Open SQL Server Management Studio (SSMS)
+2. Connect to your SQL Server (use .\SQLEXPRESS or (localdb)\MSSQLLocalDB)
+3. Open the file: CodeCamp_Database.sql
+4. Press F5 to run it
+5. You should see: "CodeCampDB created successfully with all tables and seed data."
+
+TEST LOGIN ACCOUNTS (from seed data):
+  Admin    : username=admin      password=admin123
+  Trainer  : username=trainer1   password=trainer123
+  Lecturer : username=lecturer1  password=lecturer123
+  Student  : username=student1   password=student123
+
+
+STEP 2: CREATE VISUAL STUDIO PROJECT
+--------------------------------------
+1. Open Visual Studio 2019 or 2022
+2. Click "Create a new project"
+3. Select "Windows Forms App (.NET Framework)"
+   - NOT .NET Core / .NET 5/6/7 - use .NET Framework
+4. Name it: CodeCampSystem
+5. Click Create
+
+
+STEP 3: ADD ALL .CS FILES
+---------------------------
+1. In Solution Explorer, right-click the project name
+2. Add > Existing Item
+3. Add ALL these files:
+   - DatabaseHelper.cs
+   - Models.cs
+   - SessionManager.cs
+   - LoginForm.cs
+   - AdminDashboard.cs
+   - TrainerDashboard.cs
+   - LecturerDashboard.cs
+   - StudentDashboard.cs
+
+   NOTE: Visual Studio generates Form1.cs by default - you can delete it.
+
+
+STEP 4: CREATE FORMS IN DESIGNER
+----------------------------------
+You need to create the GUI for each form in the Designer.
+Here is what controls to add for each form:
+
+--- LoginForm ---
+  - Label:   "APU CodeCamp Management System" (title)
+  - Label:   "Username"
+  - TextBox: txtUsername
+  - Label:   "Password"
+  - TextBox: txtPassword  (set PasswordChar = *)
+  - Button:  btnLogin     (Text = "Login")
+  - Label:   lblError     (ForeColor = Red, Visible = False)
+  Wire up: btnLogin.Click -> btnLogin_Click
+           txtPassword.KeyPress -> txtPassword_KeyPress
+
+--- AdminDashboard ---
+  - Label:      lblWelcome
+  - TabControl: tabControl1
+      Tab 1 (tabTrainers)  - Trainer Management
+        DataGridView: dgvTrainers
+        TextBox: txtTrainerName, txtTrainerEmail, txtTrainerPhone
+                 txtTrainerAddr, txtTrainerSpec, txtTrainerQual
+                 txtTrainerUser, txtTrainerPass
+        Button: btnAddTrainer, btnRemoveTrainer
+      Tab 2 (tabAssign) - Trainer Assignment
+        ComboBox: cboAssignTrainer, cboAssignModule, cboAssignLevel
+        Button: btnAssign
+        DataGridView: dgvAssignments
+      Tab 3 (tabFeedback) - View Feedback
+        DataGridView: dgvFeedback
+        TextBox: txtFeedbackMsg (Multiline=true, ReadOnly=true)
+        Wire: dgvFeedback.SelectionChanged -> dgvFeedback_SelectionChanged
+      Tab 4 (tabIncome) - Income Report
+        DataGridView: dgvIncome
+        Button: btnRefreshIncome
+      Tab 5 (tabProfile) - Update Profile
+        TextBox: txtProfileName, txtProfileEmail, txtProfilePhone
+                 txtProfileAddr, txtOldPass, txtNewPass
+        Button: btnSaveProfile
+  - Button: btnLogout
+  Wire: Form.Load -> AdminDashboard_Load
+        btnAddTrainer.Click, btnRemoveTrainer.Click, btnAssign.Click
+        btnRefreshIncome.Click, btnSaveProfile.Click, btnLogout.Click
+
+--- TrainerDashboard ---
+  - Label: lblWelcome
+  - TabControl with 5 tabs:
+      Tab 1 (tabClasses):
+        DataGridView: dgvClasses
+        ComboBox: cboModule, cboLevel
+        TextBox: txtFee, txtSchedule
+        DateTimePicker: dtpStartDate
+        Button: btnAddClass, btnUpdateClass, btnDeleteClass
+        Wire: dgvClasses.SelectionChanged -> dgvClasses_SelectionChanged
+      Tab 2 (tabStudents):
+        DataGridView: dgvStudents
+      Tab 3 (tabFeedback):
+        TextBox: txtFeedbackSubject, txtFeedbackMessage (Multiline=true)
+        Button: btnSendFeedback
+      Tab 4 (tabProfile):
+        TextBox: txtProfileName, txtProfileEmail, txtProfilePhone
+                 txtProfileAddr, txtOldPass, txtNewPass
+        Button: btnSaveProfile
+  - Button: btnLogout
+
+--- LecturerDashboard ---
+  - Label: lblWelcome
+  - TabControl with 5 tabs:
+      Tab 1 (tabEnrol):
+        TextBox: txtStudentName, txtTPNumber, txtStudentEmail
+                 txtStudentPhone, txtStudentAddr, txtStudentUser, txtStudentPass
+        ComboBox: cboStudyLevel, cboEnrolClass, cboEnrolMonth
+        Button: btnEnrolStudent
+      Tab 2 (tabRequests):
+        DataGridView: dgvRequests
+        Button: btnApprove, btnReject
+      Tab 3 (tabStudents - student list):
+        DataGridView: dgvStudentList
+        ComboBox: cboFilterLevel, cboFilterModule
+        Button: btnFilterStudents, btnMarkComplete, btnDeleteStudent
+      Tab 4 (tabProfile):
+        TextBox: txtProfileName, txtProfileEmail, txtProfilePhone, txtProfileAddr
+        Button: btnSaveProfile
+  - Button: btnLogout
+
+--- StudentDashboard ---
+  - Label: lblWelcome
+  - TabControl with 5 tabs:
+      Tab 1 (tabSchedule):
+        DataGridView: dgvSchedule
+      Tab 2 (tabRequest - send request):
+        DataGridView: dgvAvailableClasses
+        Button: btnSendRequest
+      Tab 3 (tabMyRequests):
+        DataGridView: dgvMyRequests
+        Button: btnCancelReq
+      Tab 4 (tabPayment):
+        DataGridView: dgvInvoice
+        Label: lblTotal
+        Button: btnPayNow
+        DataGridView: dgvPayHistory
+      Tab 5 (tabProfile):
+        TextBox: txtProfileName, txtProfileEmail, txtProfilePhone
+                 txtProfileAddr, txtOldPass, txtNewPass
+        Button: btnSaveProfile
+  - Button: btnLogout
+
+
+STEP 5: UPDATE CONNECTION STRING
+----------------------------------
+Open DatabaseHelper.cs
+Find this line:
+  @"Server=.\SQLEXPRESS;Database=CodeCampDB;Integrated Security=True;"
+
+Change Server= to match your setup:
+  - SQL Server Express : .\SQLEXPRESS
+  - LocalDB           : (localdb)\MSSQLLocalDB
+  - Named instance    : COMPUTERNAME\INSTANCENAME
+
+
+STEP 6: SET STARTUP FORM
+--------------------------
+1. Open Program.cs
+2. Change Application.Run(new Form1()) to:
+   Application.Run(new LoginForm());
+
+
+STEP 7: BUILD AND RUN
+-----------------------
+Press F5 to build and run.
+Log in with: admin / admin123
+
+
+================================================================
+ SAMPLE TEST FLOW
+================================================================
+
+1. Login as Admin (admin / admin123)
+   - Register a new trainer
+   - Assign trainer to a module
+
+2. Login as Lecturer (lecturer1 / lecturer123)
+   - Register and enrol a new student
+
+3. Login as Trainer (trainer1 / trainer123)
+   - Add a class (module, level, fee, schedule)
+
+4. Login as Student (student1 / student123)
+   - View your schedule
+   - Send a request to join another class
+   - Pay your invoice
+
+================================================================
